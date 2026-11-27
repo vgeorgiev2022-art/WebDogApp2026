@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
+using WebDogApp.Core.Contracts;
+using WebDogApp.Core.Services;
 using WebDogApp.Infrastructure.Data;
+using WebDogApp.Infrastructure.Infrastructure;
 
 namespace DogsProject
 {
@@ -14,7 +17,9 @@ namespace DogsProject
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+     options.UseLazyLoadingProxies()
+         .UseSqlServer(connectionString));
+
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddDefaultIdentity<IdentityUser>(options =>
@@ -28,7 +33,14 @@ namespace DogsProject
             })
  .AddEntityFrameworkStores<ApplicationDbContext>();
 
+            
+
+            builder.Services.AddTransient<IBreedService, BreedService>();
+
             var app = builder.Build();
+            app.PrepareDatabase();
+
+            
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
